@@ -1,4 +1,3 @@
-import { Switch } from "react-router-dom"
 import {
   PRODUCT_LIST_FAIL,
   PRODUCT_LIST_REQUEST,
