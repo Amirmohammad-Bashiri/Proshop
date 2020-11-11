@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler"
 import User from "../models/User.js"
+import generateToken from "../utils/generateToken.js"
 
 // @desc    Auth user & get token
 // @route   POST /api/users/login
@@ -14,6 +15,8 @@ export const authUser = asyncHandler(async (req, res, next) => {
     throw new Error(`No user found with email of ${email}`)
   }
 
+  const token = generateToken(user._id)
+
   const isMatch = await user.matchPassword(password)
 
   if (user && isMatch) {
@@ -22,7 +25,7 @@ export const authUser = asyncHandler(async (req, res, next) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
-      token: null,
+      token,
     })
   } else {
     res.status(401)
