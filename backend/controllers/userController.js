@@ -15,8 +15,6 @@ export const authUser = asyncHandler(async (req, res, next) => {
     throw new Error(`No user found with email of ${email}`)
   }
 
-  const token = generateToken(user._id)
-
   const isMatch = await user.matchPassword(password)
 
   if (user && isMatch) {
@@ -25,11 +23,44 @@ export const authUser = asyncHandler(async (req, res, next) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
-      token,
+      token: generateToken(user._id),
     })
   } else {
     res.status(401)
     throw new Error("invalid email or password")
+  }
+})
+
+// @desc    Create a new user
+// @route   POST /api/users
+// @access  Public
+export const registerUser = asyncHandler(async (req, res, next) => {
+  const { name, email, password } = req.body
+
+  const userExists = await User.findOne({ email })
+
+  if (userExists) {
+    res.status(400)
+    throw new Error("User already exists")
+  }
+
+  const user = await User.create({
+    name,
+    email,
+    password,
+  })
+
+  if (user) {
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      token: generateToken(user._id),
+    })
+  } else {
+    res.status(400)
+    throw new Error("Invalid user data")
   }
 })
 
