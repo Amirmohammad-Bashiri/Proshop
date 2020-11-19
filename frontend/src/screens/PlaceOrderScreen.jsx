@@ -1,15 +1,37 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import { useEffect } from "react"
+import { Link, useHistory } from "react-router-dom"
 import { Button, Row, Col, ListGroup, Image, Card } from "react-bootstrap"
 import { useDispatch, useSelector } from "react-redux"
 import Message from "../components/Message"
 import CheckoutSteps from "../components/CheckoutSteps"
+import { createOrder } from "../actions/orderAction"
 
 const PlaceOrderScreen = () => {
   const { cart } = useSelector(state => state)
+  const dispatch = useDispatch()
+  const history = useHistory()
+
+  const { order, success, error } = useSelector(state => state.orderCreate)
+
+  useEffect(() => {
+    if (success) {
+      history.push(`/order/${order._id}`)
+    }
+    // eslint-disable-next-line
+  }, [history, success])
 
   const placeOrderHandler = () => {
-    console.log("Place order")
+    dispatch(
+      createOrder({
+        orderItems: cart.cartItems,
+        shippingAddress: cart.shippingAddress,
+        paymentMethod: cart.paymentMethod,
+        itemsPrice: cart.itemsPrice,
+        shippingPrice: cart.shippingPrice,
+        taxPrice: cart.taxPrice,
+        totalPrice: cart.totalPrice,
+      })
+    )
   }
 
   // Calculate prices
@@ -119,13 +141,18 @@ const PlaceOrderScreen = () => {
                   <Col>${cart.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
-              <Button
-                type="button"
-                className="btn-block"
-                disabled={cart.cartItems === 0}
-                onClick={placeOrderHandler}>
-                Place Order
-              </Button>
+              <ListGroup.Item>
+                {error && <Message varaint="danger">{error}</Message>}
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <Button
+                  type="button"
+                  className="btn-block"
+                  disabled={cart.cartItems === 0}
+                  onClick={placeOrderHandler}>
+                  Place Order
+                </Button>
+              </ListGroup.Item>
             </ListGroup>
           </Card>
         </Col>
